@@ -19,6 +19,20 @@ Output:
 - Windows: `dist/dof2-traj-gui/` (contains `dof2-traj-gui.exe`)
 - Linux: `dist/dof2-traj-gui/` (contains executable `dof2-traj-gui`)
 
+## Build pose-only GUI binary
+```bash
+python build_binary.py --app pose
+```
+
+Output:
+- Windows: `dist/dof2-pose-gui/` (contains `dof2-pose-gui.exe`)
+- Linux: `dist/dof2-pose-gui/` (contains executable `dof2-pose-gui`)
+
+## Build both binaries
+```bash
+python build_binary.py --app all
+```
+
 ## Optional: single-file binary
 ```bash
 python build_binary.py --onefile
@@ -28,6 +42,11 @@ Output:
 - Windows: `dist/dof2-traj-gui.exe`
 - Linux: `dist/dof2-traj-gui`
 
+Pose-only onefile:
+```bash
+python build_binary.py --app pose --onefile
+```
+
 ## Optional: keep console logs
 ```bash
 python build_binary.py --console
@@ -36,4 +55,3 @@ python build_binary.py --console
 ## Cross-platform distribution recommendation
 - For developers/users with Python: publish package (`pip install .`)
 - For end users without Python: publish OS-specific binaries separately
-
