@@ -312,14 +312,44 @@ class MainWindow(QMainWindow):
             raise ValueError("Wheel diameter must be > 0.")
         return cfg
 
-    def _set_robot_view(self, cfg: ArmConfig) -> None:
-        reach = cfg.l1 + cfg.l2 + 0.05
-        xmin = min(cfg.x1, cfg.x2 - cfg.wheel_radius) - 0.2 * reach
-        xmax = max(cfg.x1, cfg.x2 + cfg.wheel_radius) + 0.2 * reach
-        zmin = min(-0.05, cfg.z2 - reach)
-        zmax = cfg.z2 + reach
-        self.robot_plot.setXRange(xmin, xmax, padding=0.05)
-        self.robot_plot.setYRange(zmin, zmax, padding=0.05)
+    def _set_robot_view(self, cfg: ArmConfig, traj: Optional[Trajectory] = None) -> None:
+        # Fit view to trajectory geometry so the robot plot starts zoomed-in and centered.
+        if traj is not None and traj.n > 0:
+            x_vals: list[float] = [cfg.x2 - cfg.wheel_radius, cfg.x2 + cfg.wheel_radius]
+            z_vals: list[float] = [cfg.z2 - cfg.wheel_radius, cfg.z2 + cfg.wheel_radius]
+
+            bar_len = max(0.12, 0.5 * (cfg.l1 + cfg.l2))
+            half = 0.5 * bar_len
+
+            for z1, q1, q2 in zip(traj.z1, traj.q1, traj.q2):
+                base, joint2, wheel = forward_kinematics(float(z1), float(q1), float(q2), cfg)
+                x_vals.extend([base[0], joint2[0], wheel[0], base[0] - half, base[0] + half])
+                z_vals.extend([base[1], joint2[1], wheel[1], base[1], base[1]])
+
+            xmin_data, xmax_data = min(x_vals), max(x_vals)
+            zmin_data, zmax_data = min(z_vals), max(z_vals)
+            x_span = max(1e-3, xmax_data - xmin_data)
+            z_span = max(1e-3, zmax_data - zmin_data)
+            x_pad = 0.10 * x_span
+            z_pad = 0.12 * z_span
+
+            xmin = xmin_data - x_pad
+            xmax = xmax_data + x_pad
+            zmin = zmin_data - z_pad
+            zmax = zmax_data + z_pad
+        else:
+            reach = cfg.l1 + cfg.l2
+            xmin = min(cfg.x1, cfg.x2 - cfg.wheel_radius) - 0.25 * reach
+            xmax = max(cfg.x1, cfg.x2 + cfg.wheel_radius) + 0.25 * reach
+            zmin = cfg.z2 - 0.25 * reach
+            zmax = cfg.z2 + 0.75 * reach
+
+        # If everything is above ground, keep ground line as the lower bound.
+        if zmin >= 0.0:
+            zmin = 0.0
+
+        self.robot_plot.setXRange(xmin, xmax, padding=0.0)
+        self.robot_plot.setYRange(zmin, zmax, padding=0.0)
         self.ground_line.setData([xmin, xmax], [0.0, 0.0])
 
         theta = np.linspace(0.0, 2.0 * np.pi, 120)
@@ -602,7 +632,7 @@ class MainWindow(QMainWindow):
         self.trajectory = traj
         self.controller.load(traj)
 
-        self._set_robot_view(cfg)
+        self._set_robot_view(cfg, traj)
         self._update_trajectory_plots(traj)
         self._fill_target_table(traj)
         self._reset_base_trail()
