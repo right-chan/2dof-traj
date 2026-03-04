@@ -61,3 +61,9 @@ dof2-trajectory-planner/
 - 현재는 `MockRobotInterface` 기반 시뮬레이션 모드입니다.
 - 실제 모터/엔코더 연동은 `src/dof2_trajectory_gui/robot_interface.py`의 `RealRobotInterface` 구현으로 확장할 수 있습니다.
 
+## Build Binary (Windows + Linux)
+- 단일 바이너리를 윈도우/리눅스 공용으로 쓰는 것은 불가능합니다.
+- 같은 소스로 각 OS에서 각각 빌드하면 됩니다.
+- 자세한 내용은 `BUILD.md` 참고:
+  - `python build_binary.py`
+  - `python build_binary.py --onefile`

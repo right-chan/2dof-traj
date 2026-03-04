@@ -18,6 +18,11 @@ authors = [
 ]
 keywords = ["robotics", "trajectory-planning", "inverse-kinematics", "gui"]
 
+[project.optional-dependencies]
+build = [
+  "pyinstaller>=6.0",
+]
+
 
 [project.scripts]
 dof2-traj-gui = "dof2_trajectory_gui.main:main"
@@ -27,4 +32,3 @@ package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
