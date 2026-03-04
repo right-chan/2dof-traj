@@ -26,6 +26,7 @@ build = [
 
 [project.scripts]
 dof2-traj-gui = "dof2_trajectory_gui.main:main"
+dof2-pose-gui = "dof2_trajectory_gui.main_pose_only:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
