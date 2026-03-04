@@ -52,6 +52,14 @@ python build_binary.py --app pose --onefile
 python build_binary.py --console
 ```
 
+## Optional: force clean build cache
+```bash
+python build_binary.py --clean
+```
+
+Note:
+- By default, build work files are created in your OS temp folder to avoid lock issues in synced folders (e.g., OneDrive).
+
 ## Cross-platform distribution recommendation
 - For developers/users with Python: publish package (`pip install .`)
 - For end users without Python: publish OS-specific binaries separately

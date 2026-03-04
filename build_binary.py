@@ -4,6 +4,8 @@ import argparse
 import platform
 import subprocess
 import sys
+import tempfile
+import time
 from pathlib import Path
 
 
@@ -22,6 +24,11 @@ def main() -> int:
         help="Show console window (default: windowed/no console).",
     )
     parser.add_argument(
+        "--clean",
+        action="store_true",
+        help="Pass --clean to PyInstaller (can fail on locked files).",
+    )
+    parser.add_argument(
         "--app",
         choices=["traj", "pose", "all"],
         default="traj",
@@ -31,6 +38,9 @@ def main() -> int:
 
     root = Path(__file__).resolve().parent
     os_name = platform.system().lower()
+    dist_dir = root / "dist"
+    work_root = Path(tempfile.gettempdir()) / "dof2_pyinstaller_work"
+    work_root.mkdir(parents=True, exist_ok=True)
 
     targets = {
         "traj": ("dof2-traj-gui", "run_gui.py"),
@@ -41,19 +51,28 @@ def main() -> int:
     print(f"[build] platform={os_name}")
     for key in selected:
         app_name, entry_script = targets[key]
+        run_tag = f"{app_name}-{int(time.time() * 1000)}"
+        work_dir = work_root / run_tag
         cmd: list[str] = [
             sys.executable,
             "-m",
             "PyInstaller",
             "--noconfirm",
-            "--clean",
             "--name",
             app_name,
             "--paths",
             "src",
+            "--distpath",
+            str(dist_dir),
+            "--workpath",
+            str(work_dir),
+            "--specpath",
+            str(root),
             entry_script,
         ]
 
+        if args.clean:
+            cmd.append("--clean")
         if args.onefile:
             cmd.append("--onefile")
         if args.console:
@@ -69,6 +88,7 @@ def main() -> int:
         else:
             output = root / "dist" / app_name
         print(f"[build] done: {output}")
+        print(f"[build] workpath: {work_dir}")
     return 0
 
 
